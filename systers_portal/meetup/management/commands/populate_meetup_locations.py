@@ -12,6 +12,7 @@ import random
 import time
 import datetime 
 from pprint import pprint
+from slugify import slugify
 
 def strTimeProp(start, end, format, prop):
 
@@ -53,10 +54,6 @@ class Command(BaseCommand):
             second = random.choice(period)
             third = random.choice(meeting_type)
             return "%s %s %s"%(city.name, second, third)
-
-        def slugify(v):
-            return '-'.join(v.split(' ')).lower()
-
 
         while True:
             value = _aux()
