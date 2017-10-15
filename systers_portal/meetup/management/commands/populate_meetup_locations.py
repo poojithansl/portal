@@ -13,6 +13,7 @@ import time
 import datetime 
 from pprint import pprint
 from slugify import slugify
+from optparse import make_option
 
 def strTimeProp(start, end, format, prop):
 
@@ -41,16 +42,17 @@ def randomDate(start, end, prop):
 
 
 class Command(BaseCommand):
-    args = '<foo bar ...>'
-    help = 'our help string comes here'
+    option_list = BaseCommand.option_list + (
+        make_option('--locations', type=int, 
+                help="Number of meetup locations to seed with"),
+        make_option('--meetups', type=int, 
+                help="Number of meetups to seed with"))
 
 
-
-    def _get_fancy_name_and_slug(self, city):
+    def _get_fancy_title_and_slug(self, city):
         def _aux():
             period = ["annual", "weekly", "monthly"]
-            meeting_type = ["release party", "hackathon", "conference"]
-
+            meeting_type = ["release party", "hackathon", "conference", "workshop", "meeting"]
             second = random.choice(period)
             third = random.choice(meeting_type)
             return "%s %s %s"%(city.name, second, third)
@@ -64,16 +66,20 @@ class Command(BaseCommand):
     def _create_meetup_locations(self, **kw):
         cities = City.objects.all()
         MeetupLocation.objects.all().delete()
-        self.used_name = set()
+        self.used_city = set()
 
         for x in range(kw['count']):
-            city = random.choice(cities)
-            name, slug = self._get_fancy_name_and_slug(city) 
-            print(name, slug)
+            city = None
+            while True:
+                city = random.choice(cities)
+                if city.name not in self.used_city:
+                    self.used_city.add(city.name)
+                    break
+            print(city)
             kwargs = {
                 #"city" : city,
-                "name" : name,
-                "slug" : slug,
+                "name" : city.name,
+                "slug" : slugify(city.name),
                 "location" : city,
                 "description" : "Bazinga!",
                 #"organizers" : get_random_string(length=4),
@@ -84,16 +90,23 @@ class Command(BaseCommand):
     def _create_meetups(self, **kw):
         Meetup.objects.all().delete()
         meetup_locations = MeetupLocation.objects.all()
+        self.used_name = set()
         for x in range(kw['count']):
-
             datetime_obj =  randomDate("2008-12-11 00:00:00", 
                     "2017-12-11 00:00:00", random.random())
 
+            # Possible bug - duct tape workaround
+            city = None
+            title, slug = '-'*51, '-'*51
+            while len(title) > 50 and len(slug) > 50:
+                city = random.choice(meetup_locations)
+                title, slug = self._get_fancy_title_and_slug(city.location) 
+            print(title, slug)
             kwargs = {
-                "title" : get_random_string(length=32),
-                "slug" : get_random_string(length=10),
+                "title" : title,
+                "slug" : slug,
                 "description" : "saturday",
-                "meetup_location" : random.choice(meetup_locations),
+                "meetup_location" : city,
                 "date" : datetime_obj.date(),
                 "time" : datetime_obj.time(),
             }
@@ -103,7 +116,6 @@ class Command(BaseCommand):
     
 
     def handle(self, *args, **options):
-        count = 500
-        self._create_meetup_locations(count=count)
-        self._create_meetups(count=count)
+        self._create_meetup_locations(count=options['locations'])
+        self._create_meetups(count=options['meetups'])
 
