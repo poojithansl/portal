@@ -35,7 +35,7 @@ urlpatterns = patterns(
         name='new-community-proposal'),
 )
 
-if settings.DEBUG:
+if settings.DEBUG or settings.SERVE_STATIC_OVERRIDE:
     urlpatterns += patterns(
         '',
         (r'^static/(?P<path>.*)$', 'django.views.static.serve',

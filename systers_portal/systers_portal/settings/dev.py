@@ -16,6 +16,11 @@ DATABASES = {
 
 INTERNAL_IPS = ('127.0.0.1',)
 
+# Uncomment the following for proper developing with DEBUG=False
+# Possible scenarios are debugging custom error messages.
+# SERVE_STATIC_OVERRIDE = True
+
+
 # Instead of sending out real email, during development the emails will be sent
 # to stdout, where from they can be inspected.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
