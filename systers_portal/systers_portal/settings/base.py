@@ -114,7 +114,6 @@ SITE_ID = 1
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
@@ -126,9 +125,9 @@ MEDIA_URL = "/media/"
 
 # Django-allauth settings
 # https://django-allauth.readthedocs.org/en/latest/#configuration
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_REQUIRED = True 
 ACCOUNT_ADAPTER = 'users.adapter.SystersUserAccountAdapter'
-
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 # Ckeditor configuration
 CKEDITOR_UPLOAD_PATH = "uploads/"
 CKEDITOR_IMAGE_BACKEND = 'pillow'
