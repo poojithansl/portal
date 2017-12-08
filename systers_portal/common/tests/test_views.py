@@ -42,3 +42,10 @@ class CommonViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         # Log out the user
         self.client.logout()
+
+    def test_sponsor_us_page(self):
+        """Test sponsor us page"""
+        sponsor_url = reverse('sponsor-us')
+        response = self.client.get(sponsor_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'common/sponsor_us.html')

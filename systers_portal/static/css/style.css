@@ -146,7 +146,8 @@ body > .container {
 /* Common: about us
 -------------------------------------------------- */
 .contact-text,
-.about-us-text {
+.about-us-text,
+.sponsor-us-text {
   font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 1.2em;
   line-height: 1.8em;

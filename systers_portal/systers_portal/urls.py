@@ -10,6 +10,7 @@ from common.views import IndexView, Logout
 from common.views import ContactView
 from common.views import AboutUsView
 from common.views import NewCommunityProposalView
+from common.views import SponsorUsView
 
 try:
     admin.autodiscover()
@@ -34,6 +35,8 @@ urlpatterns = [
     url(r'^about-us/$', AboutUsView.as_view(), name='about-us'),
     url(r'^propose/newcommunity/$', NewCommunityProposalView.as_view(),
         name='new-community-proposal'),
+    url(r'^sponsor/$', SponsorUsView.as_view(),
+        name='sponsor-us')
 ]
 
 if settings.DEBUG:

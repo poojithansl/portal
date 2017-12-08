@@ -27,3 +27,7 @@ class Logout(LogoutView):
 
     def post(self, *args, **kwargs):
         return super().post(*args, **kwargs)
+
+
+class SponsorUsView(TemplateView):
+    template_name = "common/sponsor_us.html"
