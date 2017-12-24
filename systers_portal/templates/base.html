@@ -55,6 +55,18 @@
                   New Community Proposal
                 </a>
               </li>
+              <li role="presentation">
+                <a role="menuitem" tabindex="-1"
+                   href="{% url 'request_community' %}">
+                  Request a new community</a>
+              </li>
+              {% if user.is_authenticated and user.is_active and user.is_staff %}
+              <li role="presentation">
+                <a role="menuitem" tabindex="-1"
+                   href="{% url 'unapproved_community_requests' %}">
+                  View community requests </a>
+              </li>
+              {% endif %}
           </ul>
         </li>
         <li class="dropdown">

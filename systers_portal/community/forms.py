@@ -4,9 +4,43 @@ from django.contrib.auth.models import Group
 from common.forms import ModelFormWithHelper
 from common.helpers import SubmitCancelFormHelper
 from community.constants import COMMUNITY_ADMIN
-from community.models import Community, CommunityPage
+from community.models import Community, CommunityPage, RequestCommunity
 from community.utils import get_groups
 from users.models import SystersUser
+
+
+class RequestCommunityForm(ModelFormWithHelper):
+    """Form to request a new Community"""
+    class Meta:
+        model = RequestCommunity
+        fields = ('name', 'slug', 'order', 'email', 'mailing_list',
+                  'parent_community', 'website', 'facebook', 'googleplus',
+                  'twitter')
+        helper_class = SubmitCancelFormHelper
+        helper_cancel_href = "{% url 'index' %}"
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')
+        super(RequestCommunityForm, self).__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        """Override save to add user to the instance"""
+        instance = super(RequestCommunityForm, self).save(commit=False)
+        instance.user = SystersUser.objects.get(user=self.user)
+        if commit:
+            instance.save()
+        return instance
+        
+
+class EditCommunityRequestForm(ModelFormWithHelper):
+    """Form to edit a community request"""
+    class Meta:
+        model = RequestCommunity
+        fields = ('name', 'slug', 'order', 'email', 'mailing_list',
+                  'parent_community', 'website', 'facebook', 'googleplus',
+                  'twitter')
+        helper_class = SubmitCancelFormHelper
+        helper_cancel_href = "{% url 'view_community_request' community_request.slug %}"
 
 
 class CommunityForm(ModelFormWithHelper):
