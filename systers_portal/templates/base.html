@@ -49,21 +49,15 @@
                 <a role="menuitem" tabindex="-1" href="{{ community.get_absolute_url }}">{{ community.name }}</a>
               </li>
             {% endfor %}
+              {% if user.is_authenticated and user.is_active %}
               <li {% if url == request.path %}class="active"{% endif %}role="presentation">
-                <a role="menuitem" tabindex="-1"
-                   href="{{ url }}">
-                  New Community Proposal
-                </a>
-              </li>
-              <li role="presentation">
-                <a role="menuitem" tabindex="-1"
-                   href="{% url 'request_community' %}">
+                <a role="menuitem" href="{% url 'request_community' %}">
                   Request a new community</a>
               </li>
+              {% endif %}
               {% if user.is_authenticated and user.is_active and user.is_staff %}
-              <li role="presentation">
-                <a role="menuitem" tabindex="-1"
-                   href="{% url 'unapproved_community_requests' %}">
+              <li {% if url == request.path %}class="active"{% endif %}role="presentation">
+                <a role="menuitem" href="{% url 'unapproved_community_requests' %}">
                   View community requests </a>
               </li>
               {% endif %}
