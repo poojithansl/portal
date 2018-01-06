@@ -64,6 +64,38 @@ class Meetup(models.Model):
     def __str__(self):
         return self.title
 
+class MeetupRequest(models.Model):
+    """Model to represent a new Meetup Request"""
+    title = models.CharField(max_length=50, verbose_name="Please include Title of meetup",)
+    slug = models.SlugField(max_length=50, unique=True, verbose_name="Slug")
+    date = models.DateField(verbose_name="Date")
+    time = models.TimeField(verbose_name="Time", blank=True)
+    venue = models.CharField(max_length=512, verbose_name="Venue", blank=True)
+    description = RichTextField(verbose_name="Description of meetup")
+    meetup_location = models.ForeignKey(MeetupLocation, verbose_name="Meetup Location")
+    created_by = models.ForeignKey(SystersUser, null=True, verbose_name="Created By")
+    last_updated = models.DateTimeField(auto_now=True, verbose_name="Last Update")
+
+    is_approved = models.BooleanField(default=False, verbose_name="Approved")
+    approved_by = models.ForeignKey(SystersUser, blank=True, null=True, related_name="approved-by",
+                                    verbose_name='Approved by')
+
+    class Meta:
+        verbose_name_plural = "Community requests"
+        permissions = (
+            ('view_meetup_request', 'View the community request')
+        )
+
+    def __str__(self):
+        return self.title
+
+    def get_fields(self):
+        """Get model fields of a Community object
+
+        :return: list of tuples (fieldname, fieldvalue)
+        """
+        return [(field.name, getattr(self, field.name)) for field in
+                 MeetupRequest._meta.fields]
 
 class Rsvp(models.Model):
     """ Users RSVP for particular meetup """

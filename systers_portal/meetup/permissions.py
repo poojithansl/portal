@@ -31,7 +31,8 @@ organizer_permissions = member_permissions + [
     "edit_support_request_comment",
     "delete_support_request_comment",
     "approve_support_request_comment",
-    "reject_support_request_comment"
+    "reject_support_request_comment",
+    "view_request_meetup"
 ]
 
 group_permissions = {"member": member_permissions,

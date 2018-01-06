@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from django.views.generic import DeleteView, TemplateView, RedirectView
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, FormView
 from django.views.generic.list import ListView
 from braces.views import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import User
@@ -16,11 +16,112 @@ from meetup.forms import (AddMeetupForm, EditMeetupForm, AddMeetupLocationMember
                           AddMeetupLocationForm, EditMeetupLocationForm, AddMeetupCommentForm,
                           EditMeetupCommentForm, RsvpForm, AddSupportRequestForm,
                           EditSupportRequestForm, AddSupportRequestCommentForm,
-                          EditSupportRequestCommentForm)
+                          EditSupportRequestCommentForm, AddMeetupRequestForm)
 from meetup.mixins import MeetupLocationMixin
-from meetup.models import Meetup, MeetupLocation, Rsvp, SupportRequest
+from meetup.models import Meetup, MeetupLocation, Rsvp, SupportRequest, MeetupRequest
 from users.models import SystersUser
 from common.models import Comment
+
+class AddMeetupRequestView(LoginRequiredMixin, MeetupLocationMixin, CreateView):
+    model = MeetupRequest 
+    form_class = AddMeetupRequestForm
+    template_name = "meetup/add_meetup_request.html"
+
+    def get_success_url(self):
+        """Redirect to meetup view page in case of successful submit"""
+        # return reverse("view_meetup", kwargs={"slug": self.meetup_location.slug,
+        #                                       "meetup_slug": self.object.slug})
+        return reverse("about_meetup_location",
+                       kwargs={"slug": self.meetup_location.slug})
+
+
+    def get_form_kwargs(self):
+        """Add request user and meetup location object to the form kwargs.
+        Used to autofill form fields with created_by and meetup_location without
+        explicitly filling them up in the form."""
+        kwargs = super(AddMeetupRequestView, self).get_form_kwargs()
+        self.meetup_location = get_object_or_404(MeetupLocation, slug=self.kwargs['slug'])
+        self.systersuser = get_object_or_404(
+                           SystersUser, user=self.request.user)
+        print(self.systersuser)
+        kwargs.update({'created_by': self.systersuser})
+        kwargs.update({'meetup_location': self.meetup_location})
+        print(kwargs)
+        return kwargs
+
+    def get_meetup_location(self):
+        """Add MeetupLocation object to the context"""
+        return self.meetup_location
+
+class NewMeetupRequestsListView(LoginRequiredMixin, PermissionRequiredMixin,
+                                MeetupLocationMixin, ListView):
+    model = MeetupRequest
+    template_name = "meetup/new_meetup_requests.html"
+    raise_exception = True
+    paginate_by = 10
+
+    def get_context_data(self, **kwargs):
+        """Add RequestCommunity object to the context"""
+        context = super(NewMeetupRequestsListView,
+                        self).get_context_data(**kwargs)
+        self.systersuser = get_object_or_404(
+            SystersUser, user=self.request.user)
+        context['requestor'] = self.systersuser
+        return context
+
+    def get_queryset(self, **kwargs):
+        """Set ListView queryset to all the unapproved community requests"""
+        self.meetup_location = get_object_or_404(MeetupLocation, slug=self.kwargs['slug'])
+        request_meetup_list = MeetupRequest.objects.filter(
+            is_approved=False,meetup_location=self.meetup_location)
+        return request_meetup_list
+
+    def check_permissions(self, request):
+        """Check if the request user has the permission to add a meetup to the meetup location.
+        The permission holds true for superusers."""
+        return self.request.user.has_perm('meetup.view_request_meetup')
+
+class ViewMeetupRequestView(LoginRequiredMixin, PermissionRequiredMixin,
+                            MeetupLocationMixin, FormView):
+    """View the community request"""
+    template_name = "meetup/view_meetup_request.html"
+    form_class = AddMeetupRequestForm
+    raise_exception = True
+
+    def get_context_data(self, **kwargs):
+        """Add RequestCommunity object and it's verbose fields to the context."""
+        context = super(ViewMeetupRequestView,
+                        self).get_context_data(**kwargs)
+        context['meetup_request'] = self.meetup_request
+        context['meetup_request_fields'] = self.meetup_request.get_fields()
+        return context
+
+    def get_form_kwargs(self):
+        """Add request user to the form kwargs.
+        Used to autofill form fields with requestor without
+        explicitly filling them up in the form."""
+        # kwargs = super(ViewMeetupRequestView, self).get_form_kwargs()
+        # kwargs.
+        # kwargs.update({'user': self.request.user})
+        # return kwargs
+        kwargs = super(ViewMeetupRequestView, self).get_form_kwargs()
+        self.meetup_location = get_object_or_404(MeetupLocation, slug=self.meetup_request.meetup_location.slug)
+        self.systersuser = get_object_or_404(
+                           SystersUser, user=self.request.user)
+        kwargs.update({'created_by': self.systersuser})
+        kwargs.update({'meetup_location': self.meetup_location})
+        print(kwargs)
+        return kwargs
+
+
+    def check_permissions(self, request):
+        """Check if the request user has the permissions to view the community request.
+        The permission holds true for superusers."""
+        self.meetup_request = get_object_or_404(
+            MeetupRequest, slug=self.kwargs['slug'])
+        print(self.request.user.has_perm('meetup.view_request_meetup'))
+        return self.request.user.has_perm('view_request_meetup')
+        # return self.request.user.has_perm("view_community_request", self.community_request)
 
 
 class MeetupLocationAboutView(MeetupLocationMixin, TemplateView):

@@ -6,7 +6,7 @@ from pinax.notifications import models as notification
 
 from common.forms import ModelFormWithHelper
 from common.helpers import SubmitCancelFormHelper
-from meetup.models import Meetup, MeetupLocation, Rsvp, SupportRequest
+from meetup.models import Meetup, MeetupLocation, Rsvp, SupportRequest, MeetupRequest
 from users.models import SystersUser
 from common.models import Comment
 
@@ -60,6 +60,51 @@ class AddMeetupForm(ModelFormWithHelper):
                 raise forms.ValidationError("Time should not be a time that has already passed.")
         return time
 
+class AddMeetupRequestForm(ModelFormWithHelper):
+    """Form to add a meetup"""
+    def __init__(self, *args, **kwargs):
+        self.created_by = kwargs.pop('created_by')
+        self.meetup_location = kwargs.pop('meetup_location')
+        # print(self.meetup_location)
+        super(AddMeetupRequestForm, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = MeetupRequest
+        fields = ('title', 'slug', 'date', 'time', 'venue', 'description')
+        widgets = {'date': forms.DateInput(attrs={'type': 'text', 'class': 'datepicker'}),
+                   'time': forms.TimeInput(attrs={'type': 'text', 'class': 'timepicker'})}
+        helper_class = SubmitCancelFormHelper
+        helper_cancel_href = "{% url 'about_meetup_location' meetup_location.slug %}"
+
+    def save(self, commit=True):
+        """Override save to add created_by and meetup_location to the instance"""
+        instance = super(AddMeetupRequestForm, self).save(commit=False)
+        instance.created_by = SystersUser.objects.get(user=self.created_by)
+        instance.meetup_location = self.meetup_location
+        # members = [systers_user.user for systers_user in self.meetup_location.members.all()]
+        if commit:
+            instance.save()
+            # notification.send(members, 'new_meetup', {'meetup_location': self.meetup_location,
+            #                   'meetup': instance})
+        return instance
+
+    def clean_date(self):
+        """Check if the date is less than the current date. If so, raise an error."""
+        date = self.cleaned_data.get('date')
+        if date < timezone.now().date():
+            raise forms.ValidationError("Date should not be before today's date.")
+        return date
+
+    def clean_time(self):
+        """Check that if the date is the current date, the time is not the current time. If so,
+        raise an error."""
+        time = self.cleaned_data.get('time')
+        date = self.cleaned_data.get('date')
+        if time:
+            if date == timezone.now().date() and time < timezone.now().time():
+                raise forms.ValidationError("Time should not be a time that has already passed.")
+        return time
+    
 
 class EditMeetupForm(ModelFormWithHelper):
     """Form to edit Meetup"""
