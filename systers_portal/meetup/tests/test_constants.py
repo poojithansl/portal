@@ -34,4 +34,3 @@ class ConstantsTestCase(TestCase):
     def test_success_meetup_msg_constant(self):
         success_meetup_msg_constant = SUCCESS_MEETUP_MSG
         self.assertEqual(success_meetup_msg_constant, "Meetup sucessfully created!")
-

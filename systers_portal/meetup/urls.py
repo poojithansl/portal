@@ -14,8 +14,9 @@ from meetup.views import (MeetupLocationAboutView, MeetupLocationList, MeetupVie
                           SupportRequestView, SupportRequestsListView, ApproveSupportRequestView,
                           RejectSupportRequestView, UnapprovedSupportRequestsListView,
                           AddSupportRequestCommentView, EditSupportRequestCommentView,
-                          DeleteSupportRequestCommentView, RequestMeetupView, NewMeetupRequestsListView,
-                          ViewMeetupRequestView, ApproveRequestMeetupView, RejectMeetupRequestView)
+                          DeleteSupportRequestCommentView, RequestMeetupView,
+                          NewMeetupRequestsListView, ViewMeetupRequestView,
+                          ApproveRequestMeetupView, RejectMeetupRequestView)
 
 urlpatterns = [
     url(r'^(?P<slug>[\w-]+)/about/$', MeetupLocationAboutView.as_view(),
@@ -35,12 +36,12 @@ urlpatterns = [
         name="request_meetup"),
     url(r'^(?P<slug>[\w-]+)/view_meetup_requests/$', NewMeetupRequestsListView.as_view(),
         name="new_meetup_requests"),
-    url(r'^(?P<slug>[\w-]+)/(?P<meetup_slug>[\w-]+)/view_meetup_requests/$', ViewMeetupRequestView.as_view(),
-        name="view_meetup_request"),
-    url(r'^(?P<slug>[\w-]+)/(?P<meetup_slug>[\w-]+)/approve_meetup_request/$', ApproveRequestMeetupView.as_view(),
-        name="approve_meetup_request"),
-    url(r'^(?P<slug>[\w-]+)/(?P<meetup_slug>[\w-]+)/reject_meetup_request/$', RejectMeetupRequestView.as_view(),
-        name="reject_meetup_request"),
+    url(r'^(?P<slug>[\w-]+)/(?P<meetup_slug>[\w-]+)/view_meetup_requests/$',
+        ViewMeetupRequestView.as_view(), name="view_meetup_request"),
+    url(r'^(?P<slug>[\w-]+)/(?P<meetup_slug>[\w-]+)/approve_meetup_request/$',
+        ApproveRequestMeetupView.as_view(), name="approve_meetup_request"),
+    url(r'^(?P<slug>[\w-]+)/(?P<meetup_slug>[\w-]+)/reject_meetup_request/$',
+        RejectMeetupRequestView.as_view(), name="reject_meetup_request"),
     url(r'locations/$', MeetupLocationList.as_view(), name='list_meetup_location'),
     url(r'^(?P<slug>[\w-]+)/sponsors/$', MeetupLocationSponsorsView.as_view(),
         name='sponsors_meetup_location'),
