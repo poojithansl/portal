@@ -22,7 +22,9 @@ from meetup.constants import (OK, SUCCESS_MEETUP_MSG, SLUG_ALREADY_EXISTS, SLUG_
 from users.models import SystersUser
 from common.models import Comment
 
+
 class RequestMeetupView(LoginRequiredMixin, MeetupLocationMixin, CreateView):
+    """View to Request a new meetup"""
     template_name = "meetup/request_new_meetup.html"
     model = RequestMeetup
     form_class = RequestMeetupForm
@@ -30,10 +32,13 @@ class RequestMeetupView(LoginRequiredMixin, MeetupLocationMixin, CreateView):
 
     def get_success_url(self):
         """Supply the redirect URL in case of successful submit"""
+        message = "Your request for a new meetup is successfully submitted. "\
+                  "Please wait until someone reviews your request. "
+        messages.add_message(self.request, messages.SUCCESS, message)
         return reverse('about_meetup_location', kwargs={'slug': self.meetup_location.slug})
 
     def get_form_kwargs(self):
-        """Add request user to the form kwargs.
+        """Add request user, meetup location to the form kwargs.
         Used to autofill form fields with requestor without
         explicitly filling them up in the form."""
         kwargs = super(RequestMeetupView, self).get_form_kwargs()
@@ -50,15 +55,14 @@ class RequestMeetupView(LoginRequiredMixin, MeetupLocationMixin, CreateView):
 
 class NewMeetupRequestsListView(LoginRequiredMixin, PermissionRequiredMixin, MeetupLocationMixin,
                                 ListView):
-    """List of Community Requests"""
+    """List of New Meetup Requests"""
     template_name = "meetup/new_meetup_requests.html"
     model = RequestMeetup
     raise_exception = True
     paginate_by = 10
     
     def get_queryset(self, **kwargs):
-        """Set ListView queryset to all the unapproved community requests"""
-        
+        """Set ListView queryset to all the unapproved meetup requests"""
         request_meetups_list = RequestMeetup.objects.filter(
             meetup_location=self.meetup_location, is_approved=False).order_by('date', 'time')
         return request_meetups_list 
@@ -68,33 +72,32 @@ class NewMeetupRequestsListView(LoginRequiredMixin, PermissionRequiredMixin, Mee
         return self.meetup_location
 
     def check_permissions(self, request):
-        """Check if the request user has the permission to add a meetup to the meetup location.
+        """Check if the request user has the permission to view the meetup requests.
         The permission holds true for superusers."""
         self.meetup_location = get_object_or_404(MeetupLocation, slug=self.kwargs['slug'])
-        print(self.meetup_location)
-        return self.request.user.has_perm("approve_meetup_location_meetuprequest", self.meetup_location)
+        return self.request.user.has_perm("view_meetup_location_meetuprequest", self.meetup_location)
 
 
 class ViewMeetupRequestView(LoginRequiredMixin, PermissionRequiredMixin, MeetupLocationMixin,
                             FormView):
-    """View the community request"""
+    """View the meetup request"""
     template_name = "meetup/view_new_meetup_request.html"
     form_class = RequestMeetupForm
     raise_exception = True
 
     def get_context_data(self, **kwargs):
-        """Add RequestCommunity object and it's verbose fields to the context."""
+        """Add RequestMeetup object and it's verbose fields to the context."""
         context = super(ViewMeetupRequestView,
                         self).get_context_data(**kwargs)
         self.meetup_request = get_object_or_404(
-            RequestMeetup,meetup_location=self.meetup_location, slug=self.kwargs['meetup_slug'])
+            RequestMeetup, meetup_location=self.meetup_location, slug=self.kwargs['meetup_slug'])
         context['meetup_request'] = self.meetup_request
         context['meetup_request_fields'] = \
             self.meetup_request.get_verbose_fields()
         return context
 
     def get_form_kwargs(self):
-        """Add request user to the form kwargs.
+        """Add request user, meetup  to the form kwargs.
         Used to autofill form fields with requestor without
         explicitly filling them up in the form."""
         kwargs = super(ViewMeetupRequestView, self).get_form_kwargs()
@@ -103,26 +106,25 @@ class ViewMeetupRequestView(LoginRequiredMixin, PermissionRequiredMixin, MeetupL
         return kwargs    
 
     def check_permissions(self, request):
-        """Check if the request user has the permission to add a meetup to the meetup location.
+        """Check if the request user has the permission to view meetup request in meetup location.
         The permission holds true for superusers."""
         self.meetup_location = get_object_or_404(MeetupLocation, slug=self.kwargs['slug'])
-        print(self.meetup_location)
-        return self.request.user.has_perm("approve_meetup_location_meetuprequest", self.meetup_location)
+        return self.request.user.has_perm("view_meetup_location_meetuprequest", self.meetup_location)
 
 
 class ApproveRequestMeetupView(LoginRequiredMixin, PermissionRequiredMixin, MeetupLocationMixin,
                                RedirectView):
-    """Approve the new meetup location request"""
+    """Approve the new meetup request"""
     model = RequestMeetup
     permanent = False
     raise_exception = True
 
     def get_redirect_url(self, *args, **kwargs):
         """Supply the redirect URL in case of successful approval.
-        * Creates a new RequestMeetupLocation object and copy fields,
-            values from RequestMeetupLocation object
+        * Creates a new RequestMeetup object and copy fields,
+            values from RequestMeetup object
         * Adds the requestor as the meetup location organizer
-        * Sets the RequestMeetupLocation object's is_approved field to True.
+        * Sets the RequestMeetup object's is_approved field to True.
         """
         meetup_request = get_object_or_404(
             RequestMeetup, slug=self.kwargs['meetup_slug'], meetup_location=self.meetup_location)
@@ -152,61 +154,55 @@ class ApproveRequestMeetupView(LoginRequiredMixin, PermissionRequiredMixin, Meet
             return reverse('view_meetup', kwargs={'slug': self.meetup_location.slug,\
              'meetup_slug': new_meetup.slug})
         else:
-            return reverse('new_meetup_requests')
+            return reverse('new_meetup_requests', kwargs={'slug':self.meetup_location.slug})
 
     def process_request(self):
-        """If an error occurs during the creation of a new meetup location, this method returns the
+        """If an error occurs during the creation of a new meetup, this method returns the
         status and message."""
         self.slug_meetup_values = Meetup.objects.all(
         ).values_list('slug', flat=True)
-        print(self.slug_meetup_values)
         if self.slug_meetup_request in self.slug_meetup_values:
             STATUS = SLUG_ALREADY_EXISTS
             return STATUS, SLUG_ALREADY_EXISTS_MSG.format(self.slug_meetup_request),\
                 messages.WARNING
         else:
             STATUS = OK
-        return STATUS, SUCCESS_MSG, messages.INFO
+        return STATUS, SUCCESS_MEETUP_MSG, messages.INFO
 
     def check_permissions(self, request):
         """Check if the request user has the permission to add a meetup to the meetup location.
         The permission holds true for superusers."""
         self.meetup_location = get_object_or_404(MeetupLocation, slug=self.kwargs['slug'])
-        print(self.meetup_location)
         return self.request.user.has_perm("approve_meetup_location_meetuprequest", self.meetup_location)
 
 
 class RejectMeetupRequestView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
-    """Reject the new Community Request"""
+    """Reject the new meetup request"""
     model = RequestMeetup
     template_name = "meetup/confirm_reject_request_meetup.html"
     raise_exception = True
 
     def get_success_url(self, *args, **kwargs):
-        """Supply the success URL in case of successful submit"""
+        """Supply the success URL in case of a successful submit"""
         messages.add_message(self.request, messages.INFO,
-                             "Meetup Request successfullly rejected!")
+                             "Meetup request successfullly rejected!")
+        self.meetup_request = get_object_or_404(RequestMeetup, slug=self.kwargs['meetup_slug'],
+                                                meetup_location=self.meetup_location)
         self.meetup_request.delete()
-        return reverse("new_meetup_requests", slug=self.kwargs['slug'])
+        return reverse('new_meetup_requests', kwargs={'slug':self.kwargs['slug']})
 
-    def get_context_data(self, **kwargs):
-        """Add Meetup and MeetupLocation objects to the context"""
-        context = super(RejectMeetupRequestView, self).get_context_data(**kwargs)
-        # self.meetup_request = get_object_or_404(RequestMeetup, slug=self.kwargs['meetup_slug'])
-        context['meetup_request'] = self.meetup_request
-        context['meetup_location'] = self.meetup_request.meetup_location
-        return context
-
+    def get_object(self, queryset=None):
+        """Returns the RequestMeetup object"""
+        self.meetup_request = get_object_or_404(RequestMeetup, slug=self.kwargs['meetup_slug'],
+                                                meetup_location=self.meetup_location)
+        return self.meetup_request
 
     def check_permissions(self, request):
-        """Check if the request user has the permission to add a meetup to the meetup location.
+        """Check if the request user has the permission to reject a meetup in the meetup location.
         The permission holds true for superusers."""
         self.meetup_location = get_object_or_404(MeetupLocation, slug=self.kwargs['slug'])
-        self.meetup_request = get_object_or_404(
-            RequestMeetup, slug=self.kwargs['meetup_slug'], meetup_location=self.meetup_location)
-        print(self.meetup_request)
-        print(self.meetup_location)
         return self.request.user.has_perm("reject_meetup_location_meetuprequest", self.meetup_location)
+
 
 class MeetupLocationAboutView(MeetupLocationMixin, TemplateView):
     """Meetup Location about view, show about description of Meetup Location"""

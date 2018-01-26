@@ -25,6 +25,7 @@ organizer_permissions = member_permissions + [
     "reject_meetup_location_joinrequest",
     "approve_meetup_location_meetuprequest",
     "reject_meetup_location_meetuprequest",
+    "view_meetup_location_meetuprequest",
     "approve_meetup_comment",
     "reject_meetup_comment",
     "approve_support_request",

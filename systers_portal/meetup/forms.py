@@ -11,7 +11,7 @@ from common.models import Comment
 
 
 class RequestMeetupForm(ModelFormWithHelper):
-    """ Form to create a new Community by admin. """
+    """ Form to create a new Meetup Request. """
     class Meta:
         model = RequestMeetup
         fields = ('title', 'slug', 'date', 'time', 'venue', 'description')
@@ -33,6 +33,24 @@ class RequestMeetupForm(ModelFormWithHelper):
         if commit:
             instance.save()
         return instance
+
+    def clean_date(self):
+        """Check if the date is less than the current date. If so, raise an error."""
+        date = self.cleaned_data.get('date')
+        if date < timezone.now().date():
+            raise forms.ValidationError("Date should not be before today's date.")
+        return date
+
+    def clean_time(self):
+        """Check that if the date is the current date, the time is not the current time. If so,
+        raise an error."""
+        time = self.cleaned_data.get('time')
+        date = self.cleaned_data.get('date')
+        if time:
+            if date == timezone.now().date() and time < timezone.now().time():
+                raise forms.ValidationError("Time should not be a time that has already passed.")
+        return time
+
 
 class AddMeetupForm(ModelFormWithHelper):
     """Form to create new Meetup. The created_by and the meetup_location of which meetup belong to
