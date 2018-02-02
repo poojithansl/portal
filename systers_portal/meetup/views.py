@@ -558,6 +558,27 @@ class AddMeetupCommentView(LoginRequiredMixin, MeetupLocationMixin, CreateView):
         return self.meetup_location
 
 
+class ReportMeetupCommentView(LoginRequiredMixin, MeetupLocationMixin, RedirectView):
+    model = ReportedComment
+    permanent = False
+    pk_url_kwarg = "comment_pk"
+    raise_exception = True
+
+    def get_redirect_url(self, request, *args, **kwargs):
+        systersuser = get_object_or_404(SystersUser, user=request.user)
+        self.comment = get_object_or_404(Comment, pk=self.kwargs['comment_pk'])
+        reported = ReportedComment()
+        reported.reported_comment = self.comment
+        reported.reported_by = systersuser
+        reported.save()
+        return reverse("view_meetup", kwargs={"slug": self.meetup_location.slug,
+                       "meetup_slug": self.object.content_object.slug})
+
+    def get_meetup_location(self):
+        """Add MeetupLocation object to the context"""
+        self.meetup_location = get_object_or_404(MeetupLocation, slug=self.kwargs['slug'])
+        return self.meetup_location 
+
 class EditMeetupCommentView(LoginRequiredMixin, PermissionRequiredMixin, MeetupLocationMixin,
                             UpdateView):
     """Edit a meetup's comment"""

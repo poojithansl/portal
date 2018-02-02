@@ -37,3 +37,10 @@ class Comment(models.Model):
 
     def __str__(self):
         return "Comment by {0} to {1}".format(self.author, self.content_object)
+
+
+class ReportedComment(models.Model):
+    date_reported = models.DateField(auto_now=False, auto_now_add=True,
+                                    verbose_name="Date reported")
+    reported_by = models.ForeignKey(SystersUser, verbose_name="Reported by")
+    reported_comment = models.ForeignKey(Comment, verbose_name="Reported Comment")
