@@ -166,7 +166,7 @@ class AddCommunityNewsViewTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
 
-        group = Group.objects.get(name="Foo: Content Manager")
+        group = Group.objects.get(name="Foo: Community Moderator")
         new_user.groups.add(group)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -464,7 +464,7 @@ class AddCommunityResourceViewTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
 
-        group = Group.objects.get(name="Foo: Content Manager")
+        group = Group.objects.get(name="Foo: Community Moderator")
         new_user.groups.add(group)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -591,7 +591,7 @@ class AddTagViewTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
 
-        group = Group.objects.get(name="Foo: Content Contributor")
+        group = Group.objects.get(name="Foo: Community Moderator")
         self.systers_user.join_group(group)
         self.client.login(username='foo', password='foobar')
         response = self.client.get(url)
@@ -617,7 +617,7 @@ class AddResourceTypeViewTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
 
-        group = Group.objects.get(name="Foo: Content Contributor")
+        group = Group.objects.get(name="Foo: Community Moderator")
         self.systers_user.join_group(group)
         self.client.login(username='foo', password='foobar')
         response = self.client.get(url)

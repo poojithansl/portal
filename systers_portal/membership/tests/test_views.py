@@ -2,7 +2,7 @@ from django.contrib.auth.models import User, Group
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from community.constants import USER_CONTENT_MANAGER
+from community.constants import COMMUNITY_MODERATOR
 from community.models import Community
 from membership.models import JoinRequest
 from users.models import SystersUser
@@ -460,7 +460,7 @@ class RemoveCommunityMemberViewTestCase(TestCase):
         self.assertEqual(response.status_code, 403)
         self.community.add_member(bar_systers_user)
         self.community.save()
-        group = Group.objects.get(name=USER_CONTENT_MANAGER.format("Foo"))
+        group = Group.objects.get(name=COMMUNITY_MODERATOR.format("Foo"))
         bar_user.groups.add(group)
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 200)
