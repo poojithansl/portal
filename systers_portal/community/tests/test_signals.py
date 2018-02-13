@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.contrib.auth.models import Group, User
 from django.db.models.signals import post_save, post_delete
 
-from community.constants import COMMUNITY_ADMIN
+from community.constants import COMMUNITY_LEADER
 from community.models import Community
 from community.signals import (manage_community_groups, remove_community_groups)
 from users.models import SystersUser
@@ -23,9 +23,9 @@ class SignalsTestCase(TestCase):
         community = Community.objects.create(name="Foo", slug="foo", order=1,
                                              admin=systers_user)
         groups_count = Group.objects.count()
-        self.assertEqual(groups_count, 4)
+        self.assertEqual(groups_count, 2)
         community_admin_group = Group.objects.get(
-            name=COMMUNITY_ADMIN.format("Foo"))
+            name=COMMUNITY_LEADER.format("Foo"))
         self.assertEqual(user1.groups.get(), community_admin_group)
 
         self.assertSequenceEqual(community.members.all(), [systers_user])
@@ -39,9 +39,9 @@ class SignalsTestCase(TestCase):
             name__startswith="Foo").count()
         self.assertEqual(removed_groups_count, 0)
         new_groups_count = Group.objects.filter(name__startswith="Bar").count()
-        self.assertEqual(new_groups_count, 4)
+        self.assertEqual(new_groups_count, 2)
         community_admin_group = Group.objects.get(
-            name=COMMUNITY_ADMIN.format("Bar"))
+            name=COMMUNITY_LEADER.format("Bar"))
         self.assertEqual(user2.groups.get(), community_admin_group)
         self.assertNotEqual(list(user1.groups.all()), [community_admin_group])
         self.assertCountEqual(Community.objects.get().members.all(),
@@ -54,7 +54,7 @@ class SignalsTestCase(TestCase):
         community = Community.objects.create(name="Foo", slug="foo", order=1,
                                              admin=systers_user)
         groups_count = Group.objects.count()
-        self.assertEqual(groups_count, 4)
+        self.assertEqual(groups_count, 2)
         community.delete()
         groups_count = Group.objects.count()
         self.assertEqual(groups_count, 0)

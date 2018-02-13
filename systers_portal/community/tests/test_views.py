@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from django.db.models.signals import post_save, post_delete
 from django.test import TestCase
 
-from community.constants import USER_CONTENT_MANAGER
+from community.constants import COMMUNITY_MODERATOR
 from community.models import Community, CommunityPage, RequestCommunity
 from community.signals import manage_community_groups, remove_community_groups
 from membership.models import JoinRequest
@@ -644,7 +644,7 @@ class AddCommunityPageViewTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
 
-        group = Group.objects.get(name="Foo: Content Manager")
+        group = Group.objects.get(name="Foo: Community Moderator")
         new_user.groups.add(group)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -799,7 +799,7 @@ class CommunityUsersViewTestCase(TestCase):
 
         self.community.add_member(new_systers_user)
         self.community.save()
-        group = Group.objects.get(name=USER_CONTENT_MANAGER.format("Foo"))
+        group = Group.objects.get(name=COMMUNITY_MODERATOR.format("Foo"))
         new_user.groups.add(group)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -849,7 +849,7 @@ class UserPermissionGroupsViewTestCase(TestCase):
         self.assertSequenceEqual(
             response.context['form'].fields['groups'].initial, [])
 
-        content_manager_group = Group.objects.get(name="Foo: Content Manager")
+        content_manager_group = Group.objects.get(name="Foo: Community Moderator")
         self.systers_user.join_group(content_manager_group)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -862,7 +862,7 @@ class UserPermissionGroupsViewTestCase(TestCase):
         url = reverse('user_permission_groups', kwargs={'slug': 'foo',
                                                         'username': 'foo'})
         self.client.login(username='foo', password='foobar')
-        group = Group.objects.get(name="Foo: Content Manager")
+        group = Group.objects.get(name="Foo: Community Moderator")
         self.assertFalse(self.systers_user.is_group_member(group))
         response = self.client.post(url, data={'groups': [group.pk]})
         self.assertEqual(response.status_code, 302)

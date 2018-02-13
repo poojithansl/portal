@@ -206,36 +206,22 @@ class PermissionGroupsFormTestCase(TestCase):
                                     community=self.community)
         self.assertTrue(form.is_valid())
         self.assertEqual(form.initial, {})
-        groups = [Group.objects.get(name="Foo: Content Manager"),
-                  Group.objects.get(name="Foo: Content Contributor"),
-                  Group.objects.get(name="Foo: User and Content Manager")]
-        self.assertCountEqual(form.groups, groups)
+        group = Group.objects.get(name="Foo: Community Moderator")
+        self.assertEqual(form.groups, [group])
         form.save()
-        for group in groups:
-            self.assertFalse(self.systers_user.is_group_member(group))
+        self.assertFalse(self.systers_user.is_group_member(group))
 
-        self.systers_user.join_group(groups[0])
+        self.systers_user.join_group(group)
         form = PermissionGroupsForm(user=self.systers_user, data={},
                                     community=self.community,
-                                    initial={'groups': [groups[0].pk]})
+                                    initial={'groups': [group.pk]})
         self.assertTrue(form.is_valid())
-        self.assertCountEqual(form.initial['groups'], [groups[0].pk])
+        self.assertCountEqual(form.initial['groups'], [group.pk])
         form.save()
 
         form = PermissionGroupsForm(user=self.systers_user,
                                     community=self.community,
-                                    data={'groups': [group.pk for group
-                                                     in groups]})
+                                    data={'groups': [group.pk]})
         self.assertTrue(form.is_valid())
         form.save()
-        for group in groups:
-            self.assertTrue(self.systers_user.is_group_member(group))
-
-        form = PermissionGroupsForm(user=self.systers_user,
-                                    community=self.community,
-                                    data={'groups': [groups[0].pk]})
-        self.assertTrue(form.is_valid())
-        form.save()
-        self.assertTrue(self.systers_user.is_group_member(groups[0]))
-        self.assertFalse(self.systers_user.is_group_member(groups[1]))
-        self.assertFalse(self.systers_user.is_group_member(groups[2]))
+        self.assertTrue(self.systers_user.is_group_member(group))

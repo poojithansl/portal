@@ -2,7 +2,7 @@ from django.contrib.auth.models import User, Group
 from django.db.models.signals import post_save, post_delete
 from django.test import TestCase
 
-from community.constants import COMMUNITY_ADMIN
+from community.constants import COMMUNITY_LEADER
 from community.models import Community, CommunityPage, RequestCommunity
 from community.signals import (manage_community_groups, remove_community_groups)
 from users.models import SystersUser
@@ -116,7 +116,7 @@ class CommunityModelTestCase(TestCase):
         status = community.set_new_admin(bar_systers_user)
         self.assertEqual(status, "ok")
         self.assertEqual(community.admin, bar_systers_user)
-        admin_group = Group.objects.get(name=COMMUNITY_ADMIN.format("Bar"))
+        admin_group = Group.objects.get(name=COMMUNITY_LEADER.format("Bar"))
         self.assertSequenceEqual(bar_systers_user.user.groups.all(),
                                  [admin_group])
         self.assertSequenceEqual(self.systers_user.user.groups.all(), [])
