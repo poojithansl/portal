@@ -1,6 +1,6 @@
 # user groups
 COMMUNITY_MODERATOR = "{0}: Community Moderator"
-COMMUNITY_LEADER = "{0}: Community leader"
+COMMUNITY_LEADER = "{0}: Community Leader"
 
 # community
 DEFAULT_COMMUNITY_ACTIVE_PAGE = 'news'
