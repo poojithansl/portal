@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group
 
 from common.forms import ModelFormWithHelper
 from common.helpers import SubmitCancelFormHelper
-from community.constants import COMMUNITY_ADMIN, COMMUNITY_PRESENCE_CHOICES
+from community.constants import COMMUNITY_LEADER, COMMUNITY_PRESENCE_CHOICES
 from community.models import Community, CommunityPage, RequestCommunity
 from community.utils import get_groups
 from users.models import SystersUser
@@ -203,7 +203,7 @@ class PermissionGroupsForm(forms.Form):
         # from the list of choices
         self.groups = list(get_groups(community.name))
         admin_group = Group.objects.get(
-            name=COMMUNITY_ADMIN.format(community.name))
+            name=COMMUNITY_LEADER.format(community.name))
         self.groups.remove(admin_group)
         choices = [(group.pk, group.name) for group in self.groups]
         self.fields['groups'] = forms.\

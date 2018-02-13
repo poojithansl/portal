@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 
 from common.models import Post
-from community.constants import (COMMUNITY_ADMIN,
+from community.constants import (COMMUNITY_LEADER,
                                  COMMUNITY_TYPES_CHOICES, COMMUNITY_CHANNEL_CHOICES,
                                  YES_NO_CHOICES)
 from membership.constants import NOT_MEMBER, OK
@@ -125,7 +125,7 @@ class Community(models.Model):
         """
         if not new_admin.is_member(self):
             return NOT_MEMBER
-        name = COMMUNITY_ADMIN.format(self.name)
+        name = COMMUNITY_LEADER.format(self.name)
         admin_group = Group.objects.get(name=name)
         self.admin.leave_group(admin_group)
         new_admin.join_group(admin_group)

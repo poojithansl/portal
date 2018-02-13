@@ -3,7 +3,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.shortcuts import get_object_or_404
 
-from community.constants import COMMUNITY_ADMIN
+from community.constants import COMMUNITY_LEADER
 from community.utils import (create_groups, assign_permissions, remove_groups,
                              rename_groups)
 from community.permissions import (groups_templates, group_permissions)
@@ -19,7 +19,7 @@ def manage_community_groups(sender, instance, created, **kwargs):
         assign_permissions(
             instance, groups, groups_templates, group_permissions)
         community_admin_group = next(
-            g for g in groups if g.name == COMMUNITY_ADMIN.format(name))
+            g for g in groups if g.name == COMMUNITY_LEADER.format(name))
         instance.admin.join_group(community_admin_group)
         instance.add_member(instance.admin)
         instance.save()
@@ -29,7 +29,7 @@ def manage_community_groups(sender, instance, created, **kwargs):
         if instance.admin != instance.original_admin and \
            instance.original_admin is not None:
             community_admin_group = \
-                get_object_or_404(Group, name=COMMUNITY_ADMIN.format(name))
+                get_object_or_404(Group, name=COMMUNITY_LEADER.format(name))
             instance.original_admin.leave_group(
                 community_admin_group)
             instance.admin.join_group(community_admin_group)
