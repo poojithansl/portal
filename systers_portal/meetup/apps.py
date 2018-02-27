@@ -6,3 +6,4 @@ class MeetupConfig(AppConfig):
 
     def ready(self):
         import meetup.signals
+        assert meetup.signals
