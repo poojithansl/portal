@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from meetup.models import MeetupLocation, Meetup, Rsvp, SupportRequest
+from meetup.models import MeetupLocation, Meetup, Rsvp, SupportRequest, RequestMeetupLocation
 
 
 admin.site.register(MeetupLocation)
